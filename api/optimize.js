@@ -152,7 +152,7 @@ Respond with a JSON object (no markdown, just valid JSON) with this exact struct
   ],
   "optimized": {
     "headline": "<new compelling headline, max 120 chars>",
-    "about": "<new about section, ~1500-2000 chars, with personality and impact>",
+    "about": "<new about section, ~600-800 chars MAX, short punchy paragraphs, scannable>",
     "experience": "<rewritten experience bullets for most recent 2-3 roles, achievement-focused with metrics>",
     "resumeSummary": "<3-4 line resume summary that matches the new LinkedIn narrative>"
   }
@@ -166,12 +166,13 @@ HEADLINE (max 120 chars):
 - NEVER include "seeking opportunities", "open to work", or "pivoting" - these create objections
 - Convey confidence and value
 
-ABOUT SECTION (~1500-2000 chars):
-- First 3 lines are EVERYTHING - make them punchy, compelling hooks
+ABOUT SECTION (~600-800 chars, SHORT and punchy):
+- First 3 lines are EVERYTHING - make them compelling hooks
 - Don't repeat the headline - BUILD on it
-- Tell your story with specific achievements
-- Use language/keywords of your target role
-- End with a soft CTA (open to connecting, etc.)
+- Keep it scannable - short paragraphs, not walls of text
+- 2-3 key achievements with metrics
+- End with a soft 1-line CTA
+- AVOID: long intros, filler words, generic statements
 
 EXPERIENCE BULLETS:
 - Lead with impact and results, not duties
