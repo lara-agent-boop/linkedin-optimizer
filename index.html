@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedIn Profile Optimizer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #0077b5 0%, #005582 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      font-size: 2.5rem;
+    }
+    .subtitle {
+      color: rgba(255,255,255,0.9);
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+    .helper-text {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+    input[type="url"], input[type="text"], textarea {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #0077b5;
+    }
+    textarea {
+      min-height: 200px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .toggle-paste {
+      background: none;
+      border: none;
+      color: #0077b5;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: underline;
+      margin-top: 0.5rem;
+    }
+    .paste-section {
+      display: none;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e0e0e0;
+    }
+    .paste-section.visible { display: block; }
+    .optional-tag {
+      font-size: 0.8rem;
+      color: #888;
+      font-weight: normal;
+    }
+    button[type="submit"] {
+      width: 100%;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #0077b5 0%, #005582 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button[type="submit"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,119,181,0.4);
+    }
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+    .loading.visible { display: block; }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e0e0e0;
+      border-top-color: #0077b5;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    /* Results */
+    .results {
+      display: none;
+      margin-top: 2rem;
+    }
+    .results.visible { display: block; }
+    .results-card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      margin-bottom: 1.5rem;
+    }
+    .score-section {
+      text-align: center;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 1.5rem;
+    }
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: white;
+    }
+    .score-low { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .score-medium { background: linear-gradient(135deg, #f39c12, #d68910); }
+    .score-high { background: linear-gradient(135deg, #27ae60, #1e8449); }
+    .score-label { font-size: 1.1rem; color: #666; }
+    
+    .section-title {
+      font-size: 1.3rem;
+      color: #333;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: #0077b5;
+      border-radius: 2px;
+    }
+    
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .comparison { grid-template-columns: 1fr; }
+    }
+    .comparison-box {
+      padding: 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .before {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+    .before-label, .after-label {
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+    .before-label { color: #dc2626; }
+    .after {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+    }
+    .after-label { color: #16a34a; }
+    
+    .audit-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .audit-item:last-child { border-bottom: none; }
+    .audit-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+    .audit-pass { background: #dcfce7; color: #16a34a; }
+    .audit-fail { background: #fef2f2; color: #dc2626; }
+    .audit-warn { background: #fef9c3; color: #ca8a04; }
+    
+    .copy-btn {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: #e8e8e8; }
+    
+    .output-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    
+    .reset-btn {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      background: #f5f5f5;
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    .reset-btn:hover { background: #e8e8e8; }
+    
+    .error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      display: none;
+    }
+    .error.visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔗 LinkedIn Profile Optimizer</h1>
+    <p class="subtitle">Transform your LinkedIn profile from forgettable to compelling</p>
+    
+    <div class="card">
+      <form id="optimizeForm">
+        <div class="input-group">
+          <label for="linkedinUrl">LinkedIn Profile URL</label>
+          <p class="helper-text">Paste your public LinkedIn profile URL</p>
+          <input type="url" id="linkedinUrl" placeholder="https://linkedin.com/in/yourname" />
+          <button type="button" class="toggle-paste" onclick="togglePaste()">
+            Or paste your profile content manually
+          </button>
+        </div>
+        
+        <div class="paste-section" id="pasteSection">
+          <div class="input-group">
+            <label for="profileContent">Profile Content</label>
+            <p class="helper-text">Paste your LinkedIn headline, about section, and recent experience</p>
+            <textarea id="profileContent" placeholder="Headline: Marketing Manager at Acme Corp
+
+About:
+I'm a marketing professional with 8 years of experience...
+
+Experience:
+Marketing Manager at Acme Corp (2020-Present)
+- Managed social media accounts
+- Created marketing campaigns
+- Worked with sales team
+
+Senior Marketing Coordinator at Beta Inc (2017-2020)
+- Assisted with marketing initiatives
+- Supported team projects"></textarea>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="targetRole">Target Role <span class="optional-tag">(optional)</span></label>
+          <p class="helper-text">What role are you targeting? Helps tailor recommendations.</p>
+          <input type="text" id="targetRole" placeholder="e.g., Senior Product Marketing Manager" />
+        </div>
+        
+        <button type="submit">✨ Optimize My Profile</button>
+      </form>
+      
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Analyzing your profile and crafting optimizations...</p>
+        <p style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">This takes about 30 seconds</p>
+      </div>
+      
+      <div class="error" id="error"></div>
+    </div>
+    
+    <div class="results" id="results">
+      <!-- Score Section -->
+      <div class="results-card">
+        <div class="score-section">
+          <div class="score-circle" id="scoreCircle">--</div>
+          <div class="score-label">Profile Score</div>
+        </div>
+        
+        <h2 class="section-title">Profile Audit</h2>
+        <div id="auditItems"></div>
+      </div>
+      
+      <!-- Headline -->
+      <div class="results-card">
+        <h2 class="section-title">Headline</h2>
+        <div class="comparison">
+          <div class="comparison-box before">
+            <div class="before-label">❌ Before</div>
+            <div id="headlineBefore"></div>
+          </div>
+          <div class="comparison-box after">
+            <div class="after-label">✅ After</div>
+            <div id="headlineAfter"></div>
+          </div>
+        </div>
+        <button class="copy-btn" onclick="copyText('headlineAfter')">📋 Copy New Headline</button>
+      </div>
+      
+      <!-- About Section -->
+      <div class="results-card">
+        <h2 class="section-title">About Section</h2>
+        <div class="comparison">
+          <div class="comparison-box before">
+            <div class="before-label">❌ Before</div>
+            <div id="aboutBefore"></div>
+          </div>
+          <div class="comparison-box after">
+            <div class="after-label">✅ After</div>
+            <div id="aboutAfter"></div>
+          </div>
+        </div>
+        <button class="copy-btn" onclick="copyText('aboutAfter')">📋 Copy New About</button>
+      </div>
+      
+      <!-- Experience -->
+      <div class="results-card">
+        <h2 class="section-title">Experience Bullets</h2>
+        <p style="color: #666; margin-bottom: 1rem;">Achievement-focused, metrics-driven rewrites</p>
+        <div class="output-box" id="experienceAfter"></div>
+        <button class="copy-btn" onclick="copyText('experienceAfter')" style="margin-top: 1rem;">📋 Copy Experience</button>
+      </div>
+      
+      <!-- Resume Summary -->
+      <div class="results-card">
+        <h2 class="section-title">🎁 Bonus: Resume Summary</h2>
+        <p style="color: #666; margin-bottom: 1rem;">Matching summary for your resume (consistent narrative)</p>
+        <div class="output-box" id="resumeSummary"></div>
+        <button class="copy-btn" onclick="copyText('resumeSummary')" style="margin-top: 1rem;">📋 Copy Resume Summary</button>
+      </div>
+      
+      <button class="reset-btn" onclick="resetForm()">← Optimize Another Profile</button>
+    </div>
+  </div>
+
+  <script>
+    function togglePaste() {
+      const section = document.getElementById('pasteSection');
+      section.classList.toggle('visible');
+    }
+    
+    function copyText(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text);
+      event.target.textContent = '✅ Copied!';
+      setTimeout(() => {
+        event.target.textContent = '📋 Copy';
+      }, 2000);
+    }
+    
+    function resetForm() {
+      document.getElementById('results').classList.remove('visible');
+      document.getElementById('optimizeForm').reset();
+      document.getElementById('pasteSection').classList.remove('visible');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    function setScore(score) {
+      const circle = document.getElementById('scoreCircle');
+      circle.textContent = score;
+      circle.className = 'score-circle';
+      if (score < 50) circle.classList.add('score-low');
+      else if (score < 75) circle.classList.add('score-medium');
+      else circle.classList.add('score-high');
+    }
+    
+    function renderAudit(items) {
+      const container = document.getElementById('auditItems');
+      container.innerHTML = items.map(item => `
+        <div class="audit-item">
+          <div class="audit-icon ${item.status === 'pass' ? 'audit-pass' : item.status === 'warn' ? 'audit-warn' : 'audit-fail'}">
+            ${item.status === 'pass' ? '✓' : item.status === 'warn' ? '!' : '✗'}
+          </div>
+          <div>
+            <strong>${item.category}</strong>
+            <div style="color: #666; font-size: 0.9rem;">${item.feedback}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    document.getElementById('optimizeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const linkedinUrl = document.getElementById('linkedinUrl').value.trim();
+      const profileContent = document.getElementById('profileContent').value.trim();
+      const targetRole = document.getElementById('targetRole').value.trim();
+      
+      if (!linkedinUrl && !profileContent) {
+        document.getElementById('error').textContent = 'Please enter a LinkedIn URL or paste your profile content.';
+        document.getElementById('error').classList.add('visible');
+        return;
+      }
+      
+      document.getElementById('error').classList.remove('visible');
+      document.getElementById('loading').classList.add('visible');
+      document.querySelector('button[type="submit"]').disabled = true;
+      
+      try {
+        const response = await fetch('/api/optimize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ linkedinUrl, profileContent, targetRole })
+        });
+        
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Failed to optimize profile');
+        }
+        
+        const data = await response.json();
+        
+        // Populate results
+        setScore(data.score);
+        renderAudit(data.audit);
+        
+        document.getElementById('headlineBefore').textContent = data.original.headline || '(Not provided)';
+        document.getElementById('headlineAfter').textContent = data.optimized.headline;
+        
+        document.getElementById('aboutBefore').textContent = data.original.about || '(Not provided)';
+        document.getElementById('aboutAfter').textContent = data.optimized.about;
+        
+        document.getElementById('experienceAfter').textContent = data.optimized.experience;
+        document.getElementById('resumeSummary').textContent = data.optimized.resumeSummary;
+        
+        document.getElementById('results').classList.add('visible');
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        
+      } catch (err) {
+        document.getElementById('error').textContent = err.message;
+        document.getElementById('error').classList.add('visible');
+      } finally {
+        document.getElementById('loading').classList.remove('visible');
+        document.querySelector('button[type="submit"]').disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
