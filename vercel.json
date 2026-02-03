@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/optimize.js": {
+      "maxDuration": 60
+    }
+  }
+}
