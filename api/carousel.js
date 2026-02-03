@@ -1,15 +1,79 @@
 const satori = require("satori").default;
 const { Resvg } = require("@resvg/resvg-js");
 
-// Teal brand colors
-const COLORS = {
-  background: '#FFFFFF',
-  tealGreen: '#2DD4BF',
-  textDark: '#171717',
-  textGray: '#6B7280',
-  lightGray: '#F5F5F5',
-  accent: '#0D9488'
+// Theme definitions
+const THEMES = {
+  teal: {
+    name: 'Teal',
+    background: '#FFFFFF',
+    backgroundAlt: '#171717',
+    primary: '#2DD4BF',
+    accent: '#0D9488',
+    textDark: '#171717',
+    textLight: '#FFFFFF',
+    textGray: '#6B7280',
+    lightGray: '#F5F5F5',
+    cardBg: 'rgba(255,255,255,0.1)',
+    brandName: 'Teal'
+  },
+  dark: {
+    name: 'Dark',
+    background: '#0F172A',
+    backgroundAlt: '#1E293B',
+    primary: '#38BDF8',
+    accent: '#0EA5E9',
+    textDark: '#F1F5F9',
+    textLight: '#FFFFFF',
+    textGray: '#94A3B8',
+    lightGray: '#1E293B',
+    cardBg: 'rgba(255,255,255,0.05)',
+    brandName: 'Teal'
+  },
+  ocean: {
+    name: 'Ocean',
+    background: '#FFFFFF',
+    backgroundAlt: '#0C4A6E',
+    primary: '#0284C7',
+    accent: '#0369A1',
+    textDark: '#0C4A6E',
+    textLight: '#FFFFFF',
+    textGray: '#64748B',
+    lightGray: '#F0F9FF',
+    cardBg: 'rgba(255,255,255,0.1)',
+    brandName: 'Teal'
+  },
+  sunset: {
+    name: 'Sunset',
+    background: '#FFFFFF',
+    backgroundAlt: '#7C2D12',
+    primary: '#F97316',
+    accent: '#EA580C',
+    textDark: '#431407',
+    textLight: '#FFFFFF',
+    textGray: '#78716C',
+    lightGray: '#FFF7ED',
+    cardBg: 'rgba(255,255,255,0.1)',
+    brandName: 'Teal'
+  },
+  forest: {
+    name: 'Forest',
+    background: '#FFFFFF',
+    backgroundAlt: '#14532D',
+    primary: '#22C55E',
+    accent: '#16A34A',
+    textDark: '#14532D',
+    textLight: '#FFFFFF',
+    textGray: '#6B7280',
+    lightGray: '#F0FDF4',
+    cardBg: 'rgba(255,255,255,0.1)',
+    brandName: 'Teal'
+  }
 };
+
+// Default to teal theme
+function getTheme(themeName) {
+  return THEMES[themeName] || THEMES.teal;
+}
 
 // Fetch fonts
 async function loadFont() {
@@ -42,7 +106,11 @@ async function generateSlide(element, fonts) {
 }
 
 // Footer component for all slides
-function slideFooter(slideNum, total) {
+function slideFooter(slideNum, total, theme, isDark = false) {
+  const textColor = isDark ? theme.textLight : theme.textDark;
+  const grayColor = isDark ? 'rgba(255,255,255,0.6)' : theme.textGray;
+  const borderColor = isDark ? 'rgba(255,255,255,0.2)' : '#E5E7EB';
+  
   return {
     type: "div",
     props: {
@@ -51,7 +119,7 @@ function slideFooter(slideNum, total) {
         justifyContent: "space-between",
         alignItems: "center",
         padding: "30px 60px",
-        borderTop: "1px solid #E5E7EB",
+        borderTop: `1px solid ${borderColor}`,
         marginTop: "auto",
       },
       children: [
@@ -71,7 +139,7 @@ function slideFooter(slideNum, total) {
                     width: "32px",
                     height: "32px",
                     borderRadius: "8px",
-                    background: COLORS.tealGreen,
+                    background: theme.primary,
                   },
                 },
               },
@@ -81,9 +149,9 @@ function slideFooter(slideNum, total) {
                   style: {
                     fontSize: "24px",
                     fontWeight: "bold",
-                    color: COLORS.textDark,
+                    color: textColor,
                   },
-                  children: "Teal",
+                  children: theme.brandName,
                 },
               },
             ],
@@ -94,7 +162,7 @@ function slideFooter(slideNum, total) {
           props: {
             style: {
               fontSize: "20px",
-              color: COLORS.textGray,
+              color: grayColor,
             },
             children: `${slideNum}/${total}`,
           },
@@ -105,7 +173,8 @@ function slideFooter(slideNum, total) {
 }
 
 // Slide templates
-function coverSlide(data, total) {
+function coverSlide(data, total, theme) {
+  const isDarkTheme = theme.background !== '#FFFFFF';
   const headshotElement = data.headshot
     ? {
         type: "img",
@@ -116,7 +185,7 @@ function coverSlide(data, total) {
             height: "200px",
             borderRadius: "100px",
             objectFit: "cover",
-            border: `4px solid ${COLORS.tealGreen}`,
+            border: `4px solid ${theme.primary}`,
           },
         },
       }
@@ -127,13 +196,14 @@ function coverSlide(data, total) {
             width: "200px",
             height: "200px",
             borderRadius: "100px",
-            background: COLORS.lightGray,
+            background: theme.lightGray,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "80px",
+            fontSize: "72px",
+            color: theme.textGray,
           },
-          children: "👤",
+          children: "?",
         },
       };
 
@@ -145,7 +215,7 @@ function coverSlide(data, total) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: COLORS.background,
+        background: theme.background,
       },
       children: [
         {
@@ -167,7 +237,7 @@ function coverSlide(data, total) {
                   style: {
                     fontSize: "52px",
                     fontWeight: "bold",
-                    color: COLORS.textDark,
+                    color: theme.textDark,
                     textAlign: "center",
                     marginTop: "30px",
                     marginBottom: "16px",
@@ -180,7 +250,7 @@ function coverSlide(data, total) {
                 props: {
                   style: {
                     fontSize: "28px",
-                    color: COLORS.textGray,
+                    color: theme.textGray,
                     textAlign: "center",
                     maxWidth: "800px",
                     lineHeight: 1.4,
@@ -191,13 +261,14 @@ function coverSlide(data, total) {
             ],
           },
         },
-        slideFooter(1, total),
+        slideFooter(1, total, theme, isDarkTheme),
       ],
     },
   };
 }
 
-function valueSlide(data, total) {
+function valueSlide(data, total, theme) {
+  const isDarkTheme = theme.background !== '#FFFFFF';
   const strengths = data.strengths || [
     "Strategic Leadership",
     "Data-Driven Decisions",
@@ -212,7 +283,7 @@ function valueSlide(data, total) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: COLORS.background,
+        background: theme.background,
       },
       children: [
         {
@@ -231,7 +302,7 @@ function valueSlide(data, total) {
                   style: {
                     fontSize: "44px",
                     fontWeight: "bold",
-                    color: COLORS.textDark,
+                    color: theme.textDark,
                     marginBottom: "40px",
                   },
                   children: "What I Bring",
@@ -252,10 +323,10 @@ function valueSlide(data, total) {
                         display: "flex",
                         alignItems: "center",
                         gap: "20px",
-                        background: COLORS.lightGray,
+                        background: theme.lightGray,
                         padding: "28px 32px",
                         borderRadius: "12px",
-                        borderLeft: `5px solid ${COLORS.tealGreen}`,
+                        borderLeft: `5px solid ${theme.primary}`,
                       },
                       children: [
                         {
@@ -264,7 +335,7 @@ function valueSlide(data, total) {
                             style: {
                               fontSize: "32px",
                               fontWeight: "bold",
-                              color: COLORS.accent,
+                              color: theme.accent,
                             },
                             children: `${i + 1}`,
                           },
@@ -272,7 +343,7 @@ function valueSlide(data, total) {
                         {
                           type: "div",
                           props: {
-                            style: { fontSize: "28px", color: COLORS.textDark },
+                            style: { fontSize: "28px", color: theme.textDark },
                             children: strength,
                           },
                         },
@@ -284,13 +355,13 @@ function valueSlide(data, total) {
             ],
           },
         },
-        slideFooter(2, total),
+        slideFooter(2, total, theme, isDarkTheme),
       ],
     },
   };
 }
 
-function metricsSlide(data, total) {
+function metricsSlide(data, total, theme) {
   const metrics = data.metrics || [
     { value: "10+", label: "Years Experience" },
     { value: "50+", label: "Projects Delivered" },
@@ -306,7 +377,7 @@ function metricsSlide(data, total) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: COLORS.textDark,
+        background: theme.backgroundAlt,
       },
       children: [
         {
@@ -325,7 +396,7 @@ function metricsSlide(data, total) {
                   style: {
                     fontSize: "44px",
                     fontWeight: "bold",
-                    color: COLORS.background,
+                    color: theme.textLight,
                     marginBottom: "40px",
                   },
                   children: "By The Numbers",
@@ -346,7 +417,7 @@ function metricsSlide(data, total) {
                     props: {
                       style: {
                         width: "450px",
-                        background: "rgba(255,255,255,0.1)",
+                        background: theme.cardBg,
                         borderRadius: "16px",
                         padding: "36px",
                         display: "flex",
@@ -360,7 +431,7 @@ function metricsSlide(data, total) {
                             style: {
                               fontSize: "56px",
                               fontWeight: "bold",
-                              color: COLORS.tealGreen,
+                              color: theme.primary,
                               marginBottom: "8px",
                             },
                             children: m.value,
@@ -385,70 +456,14 @@ function metricsSlide(data, total) {
             ],
           },
         },
-        {
-          type: "div",
-          props: {
-            style: {
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "30px 60px",
-              borderTop: "1px solid rgba(255,255,255,0.2)",
-            },
-            children: [
-              {
-                type: "div",
-                props: {
-                  style: {
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                  },
-                  children: [
-                    {
-                      type: "div",
-                      props: {
-                        style: {
-                          width: "32px",
-                          height: "32px",
-                          borderRadius: "8px",
-                          background: COLORS.tealGreen,
-                        },
-                      },
-                    },
-                    {
-                      type: "div",
-                      props: {
-                        style: {
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                          color: COLORS.background,
-                        },
-                        children: "Teal",
-                      },
-                    },
-                  ],
-                },
-              },
-              {
-                type: "div",
-                props: {
-                  style: {
-                    fontSize: "20px",
-                    color: "rgba(255,255,255,0.6)",
-                  },
-                  children: `3/${total}`,
-                },
-              },
-            ],
-          },
-        },
+        slideFooter(3, total, theme, true),
       ],
     },
   };
 }
 
-function expertiseSlide(data, total) {
+function expertiseSlide(data, total, theme) {
+  const isDarkTheme = theme.background !== '#FFFFFF';
   const skills = data.skills || [
     "Strategy",
     "Operations",
@@ -466,7 +481,7 @@ function expertiseSlide(data, total) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: COLORS.background,
+        background: theme.background,
       },
       children: [
         {
@@ -485,7 +500,7 @@ function expertiseSlide(data, total) {
                   style: {
                     fontSize: "44px",
                     fontWeight: "bold",
-                    color: COLORS.textDark,
+                    color: theme.textDark,
                     marginBottom: "40px",
                   },
                   children: "Areas of Expertise",
@@ -506,12 +521,12 @@ function expertiseSlide(data, total) {
                     type: "div",
                     props: {
                       style: {
-                        background: COLORS.lightGray,
-                        border: `2px solid ${COLORS.tealGreen}`,
+                        background: theme.lightGray,
+                        border: `2px solid ${theme.primary}`,
                         borderRadius: "50px",
                         padding: "18px 36px",
                         fontSize: "26px",
-                        color: COLORS.textDark,
+                        color: theme.textDark,
                         fontWeight: "600",
                       },
                       children: skill,
@@ -522,13 +537,14 @@ function expertiseSlide(data, total) {
             ],
           },
         },
-        slideFooter(4, total),
+        slideFooter(4, total, theme, isDarkTheme),
       ],
     },
   };
 }
 
-function ctaSlide(data, total) {
+function ctaSlide(data, total, theme) {
+  const isDarkTheme = theme.background !== '#FFFFFF';
   return {
     type: "div",
     props: {
@@ -537,7 +553,7 @@ function ctaSlide(data, total) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: COLORS.background,
+        background: theme.background,
       },
       children: [
         {
@@ -558,7 +574,7 @@ function ctaSlide(data, total) {
                   style: {
                     fontSize: "52px",
                     fontWeight: "bold",
-                    color: COLORS.textDark,
+                    color: theme.textDark,
                     textAlign: "center",
                     marginBottom: "24px",
                   },
@@ -570,7 +586,7 @@ function ctaSlide(data, total) {
                 props: {
                   style: {
                     fontSize: "28px",
-                    color: COLORS.textGray,
+                    color: theme.textGray,
                     textAlign: "center",
                     marginBottom: "40px",
                     maxWidth: "700px",
@@ -585,11 +601,11 @@ function ctaSlide(data, total) {
                 type: "div",
                 props: {
                   style: {
-                    background: COLORS.tealGreen,
+                    background: theme.primary,
                     borderRadius: "12px",
                     padding: "24px 48px",
                     fontSize: "26px",
-                    color: COLORS.textDark,
+                    color: isDarkTheme ? theme.textLight : theme.textDark,
                     fontWeight: "bold",
                   },
                   children: data.linkedin || "linkedin.com/in/yourprofile",
@@ -598,7 +614,7 @@ function ctaSlide(data, total) {
             ],
           },
         },
-        slideFooter(5, total),
+        slideFooter(5, total, theme, isDarkTheme),
       ],
     },
   };
@@ -606,11 +622,24 @@ function ctaSlide(data, total) {
 
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
+  }
+
+  // GET request returns available themes
+  if (req.method === "GET") {
+    return res.status(200).json({
+      themes: Object.entries(THEMES).map(([id, t]) => ({
+        id,
+        name: t.name,
+        primary: t.primary,
+        background: t.background,
+        backgroundAlt: t.backgroundAlt
+      }))
+    });
   }
 
   if (req.method !== "POST") {
@@ -618,9 +647,10 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { name, headline, strengths, metrics, skills, cta, linkedin, headshot } =
+    const { name, headline, strengths, metrics, skills, cta, linkedin, headshot, theme: themeName } =
       req.body;
 
+    const theme = getTheme(themeName);
     const data = { name, headline, strengths, metrics, skills, cta, linkedin, headshot };
     const totalSlides = 5;
 
@@ -635,13 +665,13 @@ module.exports = async (req, res) => {
       { name: "Inter", data: fontRegular, weight: 400, style: "normal" },
     ];
 
-    // Generate all slides
+    // Generate all slides with theme
     const slides = await Promise.all([
-      generateSlide(coverSlide(data, totalSlides), fonts),
-      generateSlide(valueSlide(data, totalSlides), fonts),
-      generateSlide(metricsSlide(data, totalSlides), fonts),
-      generateSlide(expertiseSlide(data, totalSlides), fonts),
-      generateSlide(ctaSlide(data, totalSlides), fonts),
+      generateSlide(coverSlide(data, totalSlides, theme), fonts),
+      generateSlide(valueSlide(data, totalSlides, theme), fonts),
+      generateSlide(metricsSlide(data, totalSlides, theme), fonts),
+      generateSlide(expertiseSlide(data, totalSlides, theme), fonts),
+      generateSlide(ctaSlide(data, totalSlides, theme), fonts),
     ]);
 
     // Return as base64 array
@@ -651,6 +681,7 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      theme: theme.name,
       slides: slidesBase64,
     });
   } catch (err) {

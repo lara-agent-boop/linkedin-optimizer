@@ -566,6 +566,33 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
             </div>
           </details>
           
+          <!-- Theme Selector -->
+          <div style="margin-bottom: 1.5rem;">
+            <label style="font-weight: 600; color: #1a202c; margin-bottom: 0.75rem; display: block;">🎨 Choose a Theme</label>
+            <div id="themeSelector" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem;">
+              <button type="button" class="theme-btn selected" data-theme="teal" style="padding: 0.75rem 0.5rem; border: 2px solid #2DD4BF; border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s;">
+                <div style="width: 100%; height: 24px; border-radius: 4px; background: linear-gradient(135deg, #FFFFFF 50%, #171717 50%); margin-bottom: 0.25rem; border: 1px solid #e0e0e0;"></div>
+                <div style="font-size: 0.7rem; color: #2DD4BF; font-weight: 600;">Teal</div>
+              </button>
+              <button type="button" class="theme-btn" data-theme="dark" style="padding: 0.75rem 0.5rem; border: 2px solid transparent; border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s;">
+                <div style="width: 100%; height: 24px; border-radius: 4px; background: linear-gradient(135deg, #0F172A 50%, #1E293B 50%); margin-bottom: 0.25rem;"></div>
+                <div style="font-size: 0.7rem; color: #38BDF8; font-weight: 600;">Dark</div>
+              </button>
+              <button type="button" class="theme-btn" data-theme="ocean" style="padding: 0.75rem 0.5rem; border: 2px solid transparent; border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s;">
+                <div style="width: 100%; height: 24px; border-radius: 4px; background: linear-gradient(135deg, #FFFFFF 50%, #0C4A6E 50%); margin-bottom: 0.25rem; border: 1px solid #e0e0e0;"></div>
+                <div style="font-size: 0.7rem; color: #0284C7; font-weight: 600;">Ocean</div>
+              </button>
+              <button type="button" class="theme-btn" data-theme="sunset" style="padding: 0.75rem 0.5rem; border: 2px solid transparent; border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s;">
+                <div style="width: 100%; height: 24px; border-radius: 4px; background: linear-gradient(135deg, #FFFFFF 50%, #7C2D12 50%); margin-bottom: 0.25rem; border: 1px solid #e0e0e0;"></div>
+                <div style="font-size: 0.7rem; color: #F97316; font-weight: 600;">Sunset</div>
+              </button>
+              <button type="button" class="theme-btn" data-theme="forest" style="padding: 0.75rem 0.5rem; border: 2px solid transparent; border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s;">
+                <div style="width: 100%; height: 24px; border-radius: 4px; background: linear-gradient(135deg, #FFFFFF 50%, #14532D 50%); margin-bottom: 0.25rem; border: 1px solid #e0e0e0;"></div>
+                <div style="font-size: 0.7rem; color: #22C55E; font-weight: 600;">Forest</div>
+              </button>
+            </div>
+          </div>
+          
           <button type="button" onclick="generateCarousel()" id="carouselBtn" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
             🎨 Generate Career Carousel
           </button>
@@ -807,6 +834,22 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
     // Carousel generation
     let carouselSlides = [];
     let headshotBase64 = null;
+    let selectedTheme = 'teal';
+    
+    // Theme selection
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.theme-btn').forEach(b => {
+          b.classList.remove('selected');
+          b.style.borderColor = 'transparent';
+        });
+        btn.classList.add('selected');
+        selectedTheme = btn.dataset.theme;
+        // Set border color based on theme
+        const colors = { teal: '#2DD4BF', dark: '#38BDF8', ocean: '#0284C7', sunset: '#F97316', forest: '#22C55E' };
+        btn.style.borderColor = colors[selectedTheme] || '#2DD4BF';
+      });
+    });
     
     function populateCarouselEditors(carouselData) {
       // Metrics
@@ -905,7 +948,8 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
             skills: editedData.skills,
             linkedin: linkedin || 'linkedin.com/in/yourprofile',
             cta: "I'm always open to discussing new opportunities and interesting projects.",
-            headshot: headshotBase64
+            headshot: headshotBase64,
+            theme: selectedTheme
           })
         });
         
