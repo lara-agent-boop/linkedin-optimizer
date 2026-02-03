@@ -1,7 +1,17 @@
 const satori = require("satori").default;
 const { Resvg } = require("@resvg/resvg-js");
 
-// Fetch font
+// Teal brand colors
+const COLORS = {
+  background: '#FFFFFF',
+  tealGreen: '#2DD4BF',
+  textDark: '#171717',
+  textGray: '#6B7280',
+  lightGray: '#F5F5F5',
+  accent: '#0D9488'
+};
+
+// Fetch fonts
 async function loadFont() {
   const response = await fetch(
     "https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.woff"
@@ -31,21 +41,82 @@ async function generateSlide(element, fonts) {
   return pngData.asPng();
 }
 
+// Footer component for all slides
+function slideFooter(slideNum, total) {
+  return {
+    type: "div",
+    props: {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "30px 60px",
+        borderTop: "1px solid #E5E7EB",
+        marginTop: "auto",
+      },
+      children: [
+        {
+          type: "div",
+          props: {
+            style: {
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+            },
+            children: [
+              {
+                type: "div",
+                props: {
+                  style: {
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "8px",
+                    background: COLORS.tealGreen,
+                  },
+                },
+              },
+              {
+                type: "div",
+                props: {
+                  style: {
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                    color: COLORS.textDark,
+                  },
+                  children: "Teal",
+                },
+              },
+            ],
+          },
+        },
+        {
+          type: "div",
+          props: {
+            style: {
+              fontSize: "20px",
+              color: COLORS.textGray,
+            },
+            children: `${slideNum}/${total}`,
+          },
+        },
+      ],
+    },
+  };
+}
+
 // Slide templates
-function coverSlide(data) {
-  // Headshot element - either image or placeholder
+function coverSlide(data, total) {
   const headshotElement = data.headshot
     ? {
         type: "img",
         props: {
           src: data.headshot,
           style: {
-            width: "220px",
-            height: "220px",
-            borderRadius: "110px",
+            width: "200px",
+            height: "200px",
+            borderRadius: "100px",
             objectFit: "cover",
-            border: "6px solid white",
-            marginBottom: "40px",
+            border: `4px solid ${COLORS.tealGreen}`,
           },
         },
       }
@@ -56,12 +127,11 @@ function coverSlide(data) {
             width: "200px",
             height: "200px",
             borderRadius: "100px",
-            background: "white",
+            background: COLORS.lightGray,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: "80px",
-            marginBottom: "40px",
           },
           children: "👤",
         },
@@ -75,45 +145,59 @@ function coverSlide(data) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(135deg, #0077b5 0%, #005582 100%)",
-        padding: "60px",
+        background: COLORS.background,
       },
       children: [
-        headshotElement,
         {
           type: "div",
           props: {
             style: {
-              fontSize: "56px",
-              fontWeight: "bold",
-              color: "white",
-              textAlign: "center",
-              marginBottom: "20px",
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "60px",
             },
-            children: data.name || "Your Name",
+            children: [
+              headshotElement,
+              {
+                type: "div",
+                props: {
+                  style: {
+                    fontSize: "52px",
+                    fontWeight: "bold",
+                    color: COLORS.textDark,
+                    textAlign: "center",
+                    marginTop: "30px",
+                    marginBottom: "16px",
+                  },
+                  children: data.name || "Your Name",
+                },
+              },
+              {
+                type: "div",
+                props: {
+                  style: {
+                    fontSize: "28px",
+                    color: COLORS.textGray,
+                    textAlign: "center",
+                    maxWidth: "800px",
+                    lineHeight: 1.4,
+                  },
+                  children: data.headline || "Professional Headline",
+                },
+              },
+            ],
           },
         },
-        {
-          type: "div",
-          props: {
-            style: {
-              fontSize: "32px",
-              color: "rgba(255,255,255,0.9)",
-              textAlign: "center",
-              maxWidth: "900px",
-              lineHeight: 1.4,
-            },
-            children: data.headline || "Professional Headline",
-          },
-        },
+        slideFooter(1, total),
       ],
     },
   };
 }
 
-function valueSlide(data) {
+function valueSlide(data, total) {
   const strengths = data.strengths || [
     "Strategic Leadership",
     "Data-Driven Decisions",
@@ -128,73 +212,85 @@ function valueSlide(data) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "white",
-        padding: "60px",
+        background: COLORS.background,
       },
       children: [
         {
           type: "div",
           props: {
             style: {
-              fontSize: "48px",
-              fontWeight: "bold",
-              color: "#0077b5",
-              marginBottom: "50px",
-            },
-            children: "What I Bring",
-          },
-        },
-        {
-          type: "div",
-          props: {
-            style: {
+              flex: 1,
               display: "flex",
               flexDirection: "column",
-              gap: "30px",
-              flex: 1,
+              padding: "60px",
             },
-            children: strengths.map((strength, i) => ({
-              type: "div",
-              props: {
-                style: {
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "24px",
-                  background: "#f8fafc",
-                  padding: "30px 40px",
-                  borderRadius: "16px",
-                  borderLeft: "6px solid #0077b5",
+            children: [
+              {
+                type: "div",
+                props: {
+                  style: {
+                    fontSize: "44px",
+                    fontWeight: "bold",
+                    color: COLORS.textDark,
+                    marginBottom: "40px",
+                  },
+                  children: "What I Bring",
                 },
-                children: [
-                  {
+              },
+              {
+                type: "div",
+                props: {
+                  style: {
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "24px",
+                  },
+                  children: strengths.map((strength, i) => ({
                     type: "div",
                     props: {
                       style: {
-                        fontSize: "36px",
-                        fontWeight: "bold",
-                        color: "#0077b5",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "20px",
+                        background: COLORS.lightGray,
+                        padding: "28px 32px",
+                        borderRadius: "12px",
+                        borderLeft: `5px solid ${COLORS.tealGreen}`,
                       },
-                      children: `${i + 1}`,
+                      children: [
+                        {
+                          type: "div",
+                          props: {
+                            style: {
+                              fontSize: "32px",
+                              fontWeight: "bold",
+                              color: COLORS.accent,
+                            },
+                            children: `${i + 1}`,
+                          },
+                        },
+                        {
+                          type: "div",
+                          props: {
+                            style: { fontSize: "28px", color: COLORS.textDark },
+                            children: strength,
+                          },
+                        },
+                      ],
                     },
-                  },
-                  {
-                    type: "div",
-                    props: {
-                      style: { fontSize: "32px", color: "#1a202c" },
-                      children: strength,
-                    },
-                  },
-                ],
+                  })),
+                },
               },
-            })),
+            ],
           },
         },
+        slideFooter(2, total),
       ],
     },
   };
 }
 
-function metricsSlide(data) {
+function metricsSlide(data, total) {
   const metrics = data.metrics || [
     { value: "10+", label: "Years Experience" },
     { value: "50+", label: "Projects Delivered" },
@@ -210,20 +306,83 @@ function metricsSlide(data) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "linear-gradient(135deg, #1a202c 0%, #2d3748 100%)",
-        padding: "60px",
+        background: COLORS.textDark,
       },
       children: [
         {
           type: "div",
           props: {
             style: {
-              fontSize: "48px",
-              fontWeight: "bold",
-              color: "white",
-              marginBottom: "50px",
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              padding: "60px",
             },
-            children: "By The Numbers",
+            children: [
+              {
+                type: "div",
+                props: {
+                  style: {
+                    fontSize: "44px",
+                    fontWeight: "bold",
+                    color: COLORS.background,
+                    marginBottom: "40px",
+                  },
+                  children: "By The Numbers",
+                },
+              },
+              {
+                type: "div",
+                props: {
+                  style: {
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "24px",
+                    flex: 1,
+                    alignContent: "center",
+                  },
+                  children: metrics.map((m) => ({
+                    type: "div",
+                    props: {
+                      style: {
+                        width: "450px",
+                        background: "rgba(255,255,255,0.1)",
+                        borderRadius: "16px",
+                        padding: "36px",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                      },
+                      children: [
+                        {
+                          type: "div",
+                          props: {
+                            style: {
+                              fontSize: "56px",
+                              fontWeight: "bold",
+                              color: COLORS.tealGreen,
+                              marginBottom: "8px",
+                            },
+                            children: m.value,
+                          },
+                        },
+                        {
+                          type: "div",
+                          props: {
+                            style: {
+                              fontSize: "22px",
+                              color: "rgba(255,255,255,0.8)",
+                              textAlign: "center",
+                            },
+                            children: m.label,
+                          },
+                        },
+                      ],
+                    },
+                  })),
+                },
+              },
+            ],
           },
         },
         {
@@ -231,50 +390,57 @@ function metricsSlide(data) {
           props: {
             style: {
               display: "flex",
-              flexWrap: "wrap",
-              gap: "30px",
-              flex: 1,
-              alignContent: "center",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "30px 60px",
+              borderTop: "1px solid rgba(255,255,255,0.2)",
             },
-            children: metrics.map((m) => ({
-              type: "div",
-              props: {
-                style: {
-                  width: "450px",
-                  background: "rgba(255,255,255,0.1)",
-                  borderRadius: "20px",
-                  padding: "40px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
+            children: [
+              {
+                type: "div",
+                props: {
+                  style: {
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                  },
+                  children: [
+                    {
+                      type: "div",
+                      props: {
+                        style: {
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "8px",
+                          background: COLORS.tealGreen,
+                        },
+                      },
+                    },
+                    {
+                      type: "div",
+                      props: {
+                        style: {
+                          fontSize: "24px",
+                          fontWeight: "bold",
+                          color: COLORS.background,
+                        },
+                        children: "Teal",
+                      },
+                    },
+                  ],
                 },
-                children: [
-                  {
-                    type: "div",
-                    props: {
-                      style: {
-                        fontSize: "64px",
-                        fontWeight: "bold",
-                        color: "#0077b5",
-                        marginBottom: "10px",
-                      },
-                      children: m.value,
-                    },
-                  },
-                  {
-                    type: "div",
-                    props: {
-                      style: {
-                        fontSize: "24px",
-                        color: "rgba(255,255,255,0.8)",
-                        textAlign: "center",
-                      },
-                      children: m.label,
-                    },
-                  },
-                ],
               },
-            })),
+              {
+                type: "div",
+                props: {
+                  style: {
+                    fontSize: "20px",
+                    color: "rgba(255,255,255,0.6)",
+                  },
+                  children: `3/${total}`,
+                },
+              },
+            ],
           },
         },
       ],
@@ -282,7 +448,7 @@ function metricsSlide(data) {
   };
 }
 
-function expertiseSlide(data) {
+function expertiseSlide(data, total) {
   const skills = data.skills || [
     "Strategy",
     "Operations",
@@ -300,56 +466,69 @@ function expertiseSlide(data) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "white",
-        padding: "60px",
+        background: COLORS.background,
       },
       children: [
         {
           type: "div",
           props: {
             style: {
-              fontSize: "48px",
-              fontWeight: "bold",
-              color: "#0077b5",
-              marginBottom: "50px",
-            },
-            children: "Areas of Expertise",
-          },
-        },
-        {
-          type: "div",
-          props: {
-            style: {
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "20px",
               flex: 1,
-              alignContent: "center",
-              justifyContent: "center",
+              display: "flex",
+              flexDirection: "column",
+              padding: "60px",
             },
-            children: skills.map((skill) => ({
-              type: "div",
-              props: {
-                style: {
-                  background: "#f0f7fb",
-                  border: "2px solid #0077b5",
-                  borderRadius: "50px",
-                  padding: "20px 40px",
-                  fontSize: "28px",
-                  color: "#0077b5",
-                  fontWeight: "bold",
+            children: [
+              {
+                type: "div",
+                props: {
+                  style: {
+                    fontSize: "44px",
+                    fontWeight: "bold",
+                    color: COLORS.textDark,
+                    marginBottom: "40px",
+                  },
+                  children: "Areas of Expertise",
                 },
-                children: skill,
               },
-            })),
+              {
+                type: "div",
+                props: {
+                  style: {
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "16px",
+                    flex: 1,
+                    alignContent: "center",
+                    justifyContent: "center",
+                  },
+                  children: skills.map((skill) => ({
+                    type: "div",
+                    props: {
+                      style: {
+                        background: COLORS.lightGray,
+                        border: `2px solid ${COLORS.tealGreen}`,
+                        borderRadius: "50px",
+                        padding: "18px 36px",
+                        fontSize: "26px",
+                        color: COLORS.textDark,
+                        fontWeight: "600",
+                      },
+                      children: skill,
+                    },
+                  })),
+                },
+              },
+            ],
           },
         },
+        slideFooter(4, total),
       ],
     },
   };
 }
 
-function ctaSlide(data) {
+function ctaSlide(data, total) {
   return {
     type: "div",
     props: {
@@ -358,55 +537,68 @@ function ctaSlide(data) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(135deg, #0077b5 0%, #005582 100%)",
-        padding: "60px",
+        background: COLORS.background,
       },
       children: [
         {
           type: "div",
           props: {
             style: {
-              fontSize: "56px",
-              fontWeight: "bold",
-              color: "white",
-              textAlign: "center",
-              marginBottom: "30px",
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "60px",
             },
-            children: "Let's Connect!",
+            children: [
+              {
+                type: "div",
+                props: {
+                  style: {
+                    fontSize: "52px",
+                    fontWeight: "bold",
+                    color: COLORS.textDark,
+                    textAlign: "center",
+                    marginBottom: "24px",
+                  },
+                  children: "Let's Connect!",
+                },
+              },
+              {
+                type: "div",
+                props: {
+                  style: {
+                    fontSize: "28px",
+                    color: COLORS.textGray,
+                    textAlign: "center",
+                    marginBottom: "40px",
+                    maxWidth: "700px",
+                    lineHeight: 1.5,
+                  },
+                  children:
+                    data.cta ||
+                    "I'm always open to discussing new opportunities and interesting projects.",
+                },
+              },
+              {
+                type: "div",
+                props: {
+                  style: {
+                    background: COLORS.tealGreen,
+                    borderRadius: "12px",
+                    padding: "24px 48px",
+                    fontSize: "26px",
+                    color: COLORS.textDark,
+                    fontWeight: "bold",
+                  },
+                  children: data.linkedin || "linkedin.com/in/yourprofile",
+                },
+              },
+            ],
           },
         },
-        {
-          type: "div",
-          props: {
-            style: {
-              fontSize: "32px",
-              color: "rgba(255,255,255,0.9)",
-              textAlign: "center",
-              marginBottom: "50px",
-              maxWidth: "800px",
-              lineHeight: 1.5,
-            },
-            children:
-              data.cta ||
-              "I'm always open to discussing new opportunities and interesting projects.",
-          },
-        },
-        {
-          type: "div",
-          props: {
-            style: {
-              background: "white",
-              borderRadius: "16px",
-              padding: "30px 60px",
-              fontSize: "28px",
-              color: "#0077b5",
-              fontWeight: "bold",
-            },
-            children: data.linkedin || "linkedin.com/in/yourprofile",
-          },
-        },
+        slideFooter(5, total),
       ],
     },
   };
@@ -430,6 +622,7 @@ module.exports = async (req, res) => {
       req.body;
 
     const data = { name, headline, strengths, metrics, skills, cta, linkedin, headshot };
+    const totalSlides = 5;
 
     // Load fonts
     const [fontBold, fontRegular] = await Promise.all([
@@ -444,11 +637,11 @@ module.exports = async (req, res) => {
 
     // Generate all slides
     const slides = await Promise.all([
-      generateSlide(coverSlide(data), fonts),
-      generateSlide(valueSlide(data), fonts),
-      generateSlide(metricsSlide(data), fonts),
-      generateSlide(expertiseSlide(data), fonts),
-      generateSlide(ctaSlide(data), fonts),
+      generateSlide(coverSlide(data, totalSlides), fonts),
+      generateSlide(valueSlide(data, totalSlides), fonts),
+      generateSlide(metricsSlide(data, totalSlides), fonts),
+      generateSlide(expertiseSlide(data, totalSlides), fonts),
+      generateSlide(ctaSlide(data, totalSlides), fonts),
     ]);
 
     // Return as base64 array
