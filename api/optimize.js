@@ -1,11 +1,16 @@
 const Anthropic = require("@anthropic-ai/sdk").default;
 const pdf = require("pdf-parse");
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 module.exports = async (req, res) => {
+  // Check API key availability
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    console.error("ANTHROPIC_API_KEY not found in environment");
+    return res.status(500).json({ error: "API configuration error - missing API key" });
+  }
+
+  const client = new Anthropic({ apiKey });
+
   // CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -189,8 +194,19 @@ Return ONLY valid JSON, no explanation or markdown.`;
     return res.status(200).json(result);
   } catch (err) {
     console.error("API error:", err);
+    console.error("Error name:", err.name);
+    console.error("Error message:", err.message);
+    console.error("Error stack:", err.stack);
+    
+    // More descriptive error for users
+    let userError = err.message || "Failed to optimize profile";
+    if (err.message === "Connection error.") {
+      userError = "Failed to connect to AI service. Please try again in a moment.";
+    }
+    
     return res.status(500).json({
-      error: err.message || "Failed to optimize profile",
+      error: userError,
+      debug: process.env.NODE_ENV !== 'production' ? err.stack : undefined
     });
   }
 };
