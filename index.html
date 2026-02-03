@@ -529,25 +529,14 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
         <p style="color: #666; margin-bottom: 1rem;">Generate a shareable carousel for cold outreach, interviews, or networking</p>
         
         <div id="carouselForm" style="margin-bottom: 1.5rem;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div>
-              <label style="font-size: 0.9rem; color: #666; display: block; margin-bottom: 0.25rem;">Your Name</label>
-              <input type="text" id="carouselName" placeholder="Jane Smith" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+          <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8fafc; border-radius: 8px; margin-bottom: 1rem;">
+            <div id="headshotUpload" style="width: 80px; height: 80px; border-radius: 40px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; overflow: hidden; flex-shrink: 0; border: 3px dashed #cbd5e0; transition: all 0.2s;" onclick="document.getElementById('headshotInput').click()">
+              <div id="headshotPreview">👤</div>
             </div>
-            <div>
-              <label style="font-size: 0.9rem; color: #666; display: block; margin-bottom: 0.25rem;">LinkedIn URL</label>
-              <input type="text" id="carouselLinkedin" placeholder="linkedin.com/in/janesmith" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
-            </div>
-          </div>
-          
-          <div style="margin-bottom: 1rem;">
-            <label style="font-size: 0.9rem; color: #666; display: block; margin-bottom: 0.25rem;">Headshot Photo <span style="color: #999;">(optional)</span></label>
-            <div id="headshotUpload" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 2px dashed #ddd; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('headshotInput').click()">
-              <div id="headshotPreview" style="width: 60px; height: 60px; border-radius: 30px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden;">👤</div>
-              <div>
-                <div style="font-weight: 500; color: #333;">Click to upload headshot</div>
-                <div style="font-size: 0.85rem; color: #999;">Square photo works best</div>
-              </div>
+            <div style="flex: 1;">
+              <div id="carouselNameDisplay" style="font-weight: 600; font-size: 1.1rem; color: #1a202c;"></div>
+              <div id="carouselHeadlineDisplay" style="font-size: 0.9rem; color: #666; margin-top: 0.25rem;"></div>
+              <div style="font-size: 0.8rem; color: #0077b5; margin-top: 0.5rem; cursor: pointer;" onclick="document.getElementById('headshotInput').click()">📷 Add your headshot</div>
             </div>
             <input type="file" id="headshotInput" accept="image/*" style="display: none;" onchange="handleHeadshot(event)">
           </div>
@@ -759,12 +748,24 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
         // Store optimized data for carousel
         window.optimizedData = data;
         
+        // Use extracted name and LinkedIn from API
+        window.extractedName = data.original?.name || 'Your Name';
+        window.extractedLinkedin = data.original?.linkedin || '';
+        
+        // Pre-fill carousel info
+        document.getElementById('carouselNameDisplay').textContent = window.extractedName;
+        document.getElementById('carouselHeadlineDisplay').textContent = data.optimized?.headline || '';
+        
         document.getElementById('results').classList.add('visible');
         document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
         
         // Reset carousel state
         document.getElementById('carouselResults').style.display = 'none';
         document.getElementById('carouselForm').style.display = 'block';
+        headshotBase64 = null;
+        document.getElementById('headshotPreview').innerHTML = '👤';
+        document.getElementById('headshotUpload').style.borderColor = '#cbd5e0';
+        document.getElementById('headshotUpload').style.background = '#e2e8f0';
         
       } catch (err) {
         document.getElementById('error').textContent = err.message;
@@ -787,21 +788,17 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
       reader.onload = (e) => {
         headshotBase64 = e.target.result;
         const preview = document.getElementById('headshotPreview');
-        preview.innerHTML = `<img src="${headshotBase64}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        preview.innerHTML = `<img src="${headshotBase64}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+        document.getElementById('headshotUpload').style.borderStyle = 'solid';
         document.getElementById('headshotUpload').style.borderColor = '#0077b5';
-        document.getElementById('headshotUpload').style.background = '#f0f7fb';
+        document.getElementById('headshotUpload').style.background = 'transparent';
       };
       reader.readAsDataURL(file);
     }
     
     async function generateCarousel() {
-      const name = document.getElementById('carouselName').value.trim();
-      const linkedin = document.getElementById('carouselLinkedin').value.trim();
-      
-      if (!name) {
-        alert('Please enter your name');
-        return;
-      }
+      const name = window.extractedName || 'Your Name';
+      const linkedin = window.extractedLinkedin || 'linkedin.com/in/yourprofile';
       
       document.getElementById('carouselForm').style.display = 'none';
       document.getElementById('carouselLoading').style.display = 'block';

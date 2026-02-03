@@ -115,8 +115,10 @@ Respond with a JSON object (no markdown, just valid JSON) with this exact struct
 {
   "score": <number 0-100>,
   "original": {
+    "name": "<extracted full name from profile>",
     "headline": "<extracted original headline or best guess>",
-    "about": "<extracted original about section or best guess, first 500 chars>"
+    "about": "<extracted original about section or best guess, first 500 chars>",
+    "linkedin": "<extracted linkedin URL if found, or empty string>"
   },
   "audit": [
     {
