@@ -1,56 +1,9 @@
 const Anthropic = require("@anthropic-ai/sdk").default;
+const pdf = require("pdf-parse");
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
-
-// Try to fetch LinkedIn profile (usually blocked, but worth trying)
-async function fetchLinkedInProfile(url) {
-  try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-      },
-      redirect: "follow",
-    });
-
-    if (!response.ok) return null;
-
-    const html = await response.text();
-
-    // LinkedIn usually returns a login wall, check for that
-    if (
-      html.includes("authwall") ||
-      html.includes("login") ||
-      html.includes("Sign in")
-    ) {
-      return null;
-    }
-
-    // Try to extract basic profile info from HTML
-    // This is fragile but might work for public profiles
-    const nameMatch = html.match(/<title>([^|<]+)/);
-    const aboutMatch = html.match(
-      /About<\/h2>[\s\S]*?<p[^>]*>([^<]+)<\/p>/i
-    );
-
-    if (nameMatch) {
-      return {
-        raw: html.substring(0, 50000), // Limit size
-        extracted: true,
-      };
-    }
-
-    return null;
-  } catch (err) {
-    console.error("LinkedIn fetch error:", err.message);
-    return null;
-  }
-}
 
 module.exports = async (req, res) => {
   // CORS
@@ -66,29 +19,36 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { linkedinUrl, profileContent, targetRole } = req.body;
+  const { pdfBase64, profileContent, targetRole } = req.body;
 
-  // Try to get content from URL if provided
   let content = profileContent;
-  let fetchedFromUrl = false;
 
-  if (linkedinUrl && !profileContent) {
-    const fetched = await fetchLinkedInProfile(linkedinUrl);
-    if (fetched) {
-      content = fetched.raw;
-      fetchedFromUrl = true;
-    } else {
+  // Parse PDF if provided
+  if (pdfBase64) {
+    try {
+      const pdfBuffer = Buffer.from(pdfBase64, "base64");
+      const pdfData = await pdf(pdfBuffer);
+      content = pdfData.text;
+
+      if (!content || content.trim().length < 50) {
+        return res.status(400).json({
+          error:
+            "Could not extract text from PDF. The file may be image-based or corrupted. Try pasting your profile content manually.",
+        });
+      }
+    } catch (err) {
+      console.error("PDF parse error:", err.message);
       return res.status(400).json({
         error:
-          "Could not fetch LinkedIn profile. LinkedIn blocks automated access. Please paste your profile content manually using the toggle below the URL field.",
-        needsPaste: true,
+          "Failed to parse PDF. Make sure it's a valid LinkedIn profile export. Error: " +
+          err.message,
       });
     }
   }
 
   if (!content) {
     return res.status(400).json({
-      error: "Please provide your LinkedIn profile content.",
+      error: "Please provide your LinkedIn profile content (PDF or text).",
     });
   }
 

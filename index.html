@@ -65,22 +65,112 @@
       resize: vertical;
       font-family: inherit;
     }
-    .toggle-paste {
-      background: none;
+    
+    /* Input Method Tabs */
+    .input-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid #0077b5;
+    }
+    .input-tab {
+      flex: 1;
+      padding: 1rem;
+      background: white;
       border: none;
-      color: #0077b5;
       cursor: pointer;
-      font-size: 0.9rem;
-      text-decoration: underline;
-      margin-top: 0.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #0077b5;
+      transition: all 0.2s;
     }
-    .paste-section {
+    .input-tab:not(:last-child) {
+      border-right: 1px solid #0077b5;
+    }
+    .input-tab.active {
+      background: #0077b5;
+      color: white;
+    }
+    .input-tab:hover:not(.active) {
+      background: #f0f7fb;
+    }
+    
+    .input-section {
       display: none;
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid #e0e0e0;
     }
-    .paste-section.visible { display: block; }
+    .input-section.active {
+      display: block;
+    }
+    
+    /* PDF Upload */
+    .upload-area {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fafafa;
+    }
+    .upload-area:hover {
+      border-color: #0077b5;
+      background: #f0f7fb;
+    }
+    .upload-area.dragover {
+      border-color: #0077b5;
+      background: #e6f2f8;
+    }
+    .upload-area.has-file {
+      border-color: #27ae60;
+      background: #f0fdf4;
+    }
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    .upload-text {
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+    .upload-hint {
+      font-size: 0.85rem;
+      color: #999;
+    }
+    .file-name {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: white;
+      border-radius: 4px;
+      font-weight: 500;
+      color: #27ae60;
+      display: inline-block;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    
+    .how-to-export {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    .how-to-export summary {
+      cursor: pointer;
+      color: #0077b5;
+      font-weight: 500;
+    }
+    .how-to-export ol {
+      margin: 1rem 0 0 1.5rem;
+      color: #666;
+    }
+    .how-to-export li {
+      margin-bottom: 0.5rem;
+    }
+    
     .optional-tag {
       font-size: 0.8rem;
       color: #888;
@@ -286,19 +376,45 @@
     
     <div class="card">
       <form id="optimizeForm">
-        <div class="input-group">
-          <label for="linkedinUrl">LinkedIn Profile URL</label>
-          <p class="helper-text">Paste your public LinkedIn profile URL</p>
-          <input type="url" id="linkedinUrl" placeholder="https://linkedin.com/in/yourname" />
-          <button type="button" class="toggle-paste" onclick="togglePaste()">
-            Or paste your profile content manually
-          </button>
+        
+        <!-- Input Method Tabs -->
+        <div class="input-tabs">
+          <button type="button" class="input-tab active" data-tab="pdf">📄 Upload PDF</button>
+          <button type="button" class="input-tab" data-tab="paste">📝 Paste Text</button>
         </div>
         
-        <div class="paste-section" id="pasteSection">
+        <!-- PDF Upload Section -->
+        <div class="input-section active" id="pdfSection">
+          <div class="input-group">
+            <label>LinkedIn Profile PDF</label>
+            <p class="helper-text">Export your profile from LinkedIn and upload it here</p>
+            
+            <div class="upload-area" id="uploadArea">
+              <div class="upload-icon">📄</div>
+              <div class="upload-text">Drop your PDF here or click to browse</div>
+              <div class="upload-hint">Accepts .pdf files from LinkedIn export</div>
+              <div class="file-name" id="fileName" style="display: none;"></div>
+            </div>
+            <input type="file" id="pdfFile" accept=".pdf,application/pdf" />
+            
+            <details class="how-to-export">
+              <summary>How do I export my LinkedIn profile as PDF?</summary>
+              <ol>
+                <li>Go to your LinkedIn profile</li>
+                <li>Click the <strong>"More"</strong> button (below your headline)</li>
+                <li>Select <strong>"Save to PDF"</strong></li>
+                <li>The PDF will download automatically</li>
+                <li>Upload that file here!</li>
+              </ol>
+            </details>
+          </div>
+        </div>
+        
+        <!-- Paste Text Section -->
+        <div class="input-section" id="pasteSection">
           <div class="input-group">
             <label for="profileContent">Profile Content</label>
-            <p class="helper-text">Paste your LinkedIn headline, about section, and recent experience</p>
+            <p class="helper-text">Paste your LinkedIn headline, about section, and experience</p>
             <textarea id="profileContent" placeholder="Headline: Marketing Manager at Acme Corp
 
 About:
@@ -399,9 +515,54 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
   </div>
 
   <script>
-    function togglePaste() {
-      const section = document.getElementById('pasteSection');
-      section.classList.toggle('visible');
+    let selectedFile = null;
+    
+    // Tab switching
+    document.querySelectorAll('.input-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.input-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.input-section').forEach(s => s.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab + 'Section').classList.add('active');
+      });
+    });
+    
+    // PDF Upload handling
+    const uploadArea = document.getElementById('uploadArea');
+    const pdfInput = document.getElementById('pdfFile');
+    const fileNameDisplay = document.getElementById('fileName');
+    
+    uploadArea.addEventListener('click', () => pdfInput.click());
+    
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type === 'application/pdf') {
+        handleFile(file);
+      }
+    });
+    
+    pdfInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        handleFile(e.target.files[0]);
+      }
+    });
+    
+    function handleFile(file) {
+      selectedFile = file;
+      uploadArea.classList.add('has-file');
+      fileNameDisplay.textContent = '✓ ' + file.name;
+      fileNameDisplay.style.display = 'inline-block';
     }
     
     function copyText(elementId) {
@@ -416,7 +577,9 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
     function resetForm() {
       document.getElementById('results').classList.remove('visible');
       document.getElementById('optimizeForm').reset();
-      document.getElementById('pasteSection').classList.remove('visible');
+      selectedFile = null;
+      uploadArea.classList.remove('has-file');
+      fileNameDisplay.style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     
@@ -447,12 +610,19 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
     document.getElementById('optimizeForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const linkedinUrl = document.getElementById('linkedinUrl').value.trim();
       const profileContent = document.getElementById('profileContent').value.trim();
       const targetRole = document.getElementById('targetRole').value.trim();
+      const isPdfTab = document.querySelector('.input-tab.active').dataset.tab === 'pdf';
       
-      if (!linkedinUrl && !profileContent) {
-        document.getElementById('error').textContent = 'Please enter a LinkedIn URL or paste your profile content.';
+      // Validation
+      if (isPdfTab && !selectedFile) {
+        document.getElementById('error').textContent = 'Please upload your LinkedIn profile PDF.';
+        document.getElementById('error').classList.add('visible');
+        return;
+      }
+      
+      if (!isPdfTab && !profileContent) {
+        document.getElementById('error').textContent = 'Please paste your profile content.';
         document.getElementById('error').classList.add('visible');
         return;
       }
@@ -462,10 +632,29 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
       document.querySelector('button[type="submit"]').disabled = true;
       
       try {
+        let body;
+        let headers = {};
+        
+        if (isPdfTab && selectedFile) {
+          // Read file as base64
+          const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(selectedFile);
+          });
+          
+          body = JSON.stringify({ pdfBase64: base64, targetRole });
+          headers['Content-Type'] = 'application/json';
+        } else {
+          body = JSON.stringify({ profileContent, targetRole });
+          headers['Content-Type'] = 'application/json';
+        }
+        
         const response = await fetch('/api/optimize', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ linkedinUrl, profileContent, targetRole })
+          headers,
+          body
         });
         
         if (!response.ok) {
