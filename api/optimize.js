@@ -1,4 +1,4 @@
-const Anthropic = require("@anthropic-ai/sdk").default;
+const Anthropic = require("@anthropic-ai/sdk");
 const pdf = require("pdf-parse");
 
 module.exports = async (req, res) => {
