@@ -240,7 +240,7 @@ function metricsSlide(data) {
               type: "div",
               props: {
                 style: {
-                  width: "calc(50% - 15px)",
+                  width: "450px",
                   background: "rgba(255,255,255,0.1)",
                   borderRadius: "20px",
                   padding: "40px",
