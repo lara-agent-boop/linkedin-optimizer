@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@anthropic-ai/sdk": "^0.52.0",
-    "pdf-parse": "^1.1.1"
+    "@resvg/resvg-js": "^2.6.2",
+    "pdf-parse": "^1.1.1",
+    "satori": "^0.12.1"
   }
 }

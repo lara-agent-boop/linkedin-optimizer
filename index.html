@@ -523,6 +523,43 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
         <button class="copy-btn" onclick="copyText('resumeSummary')" style="margin-top: 1rem;">📋 Copy Resume Summary</button>
       </div>
       
+      <!-- Career Carousel -->
+      <div class="results-card" id="carouselSection">
+        <h2 class="section-title">🎠 Career Highlight Carousel</h2>
+        <p style="color: #666; margin-bottom: 1rem;">Generate a shareable carousel for cold outreach, interviews, or networking</p>
+        
+        <div id="carouselForm" style="margin-bottom: 1.5rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="font-size: 0.9rem; color: #666; display: block; margin-bottom: 0.25rem;">Your Name</label>
+              <input type="text" id="carouselName" placeholder="Jane Smith" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div>
+              <label style="font-size: 0.9rem; color: #666; display: block; margin-bottom: 0.25rem;">LinkedIn URL</label>
+              <input type="text" id="carouselLinkedin" placeholder="linkedin.com/in/janesmith" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+          </div>
+          
+          <button type="button" onclick="generateCarousel()" id="carouselBtn" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+            🎨 Generate Career Carousel
+          </button>
+        </div>
+        
+        <div id="carouselLoading" style="display: none; text-align: center; padding: 2rem;">
+          <div class="spinner"></div>
+          <p>Creating your carousel slides...</p>
+        </div>
+        
+        <div id="carouselResults" style="display: none;">
+          <div id="carouselSlides" style="display: flex; gap: 1rem; overflow-x: auto; padding: 1rem 0;"></div>
+          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button onclick="downloadAllSlides()" style="flex: 1; padding: 0.75rem; background: #0077b5; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+              📥 Download All Slides
+            </button>
+          </div>
+        </div>
+      </div>
+      
       <button class="reset-btn" onclick="resetForm()">← Optimize Another Profile</button>
     </div>
   </div>
@@ -707,8 +744,15 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
         document.getElementById('experienceAfter').innerHTML = formatExperience(data.optimized.experience);
         document.getElementById('resumeSummary').textContent = data.optimized.resumeSummary;
         
+        // Store optimized data for carousel
+        window.optimizedData = data;
+        
         document.getElementById('results').classList.add('visible');
         document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        
+        // Reset carousel state
+        document.getElementById('carouselResults').style.display = 'none';
+        document.getElementById('carouselForm').style.display = 'block';
         
       } catch (err) {
         document.getElementById('error').textContent = err.message;
@@ -718,6 +762,161 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
         document.querySelector('button[type="submit"]').disabled = false;
       }
     });
+    
+    // Carousel generation
+    let carouselSlides = [];
+    
+    async function generateCarousel() {
+      const name = document.getElementById('carouselName').value.trim();
+      const linkedin = document.getElementById('carouselLinkedin').value.trim();
+      
+      if (!name) {
+        alert('Please enter your name');
+        return;
+      }
+      
+      document.getElementById('carouselForm').style.display = 'none';
+      document.getElementById('carouselLoading').style.display = 'block';
+      
+      try {
+        // Extract data from optimized profile
+        const data = window.optimizedData;
+        const headline = data?.optimized?.headline || 'Professional';
+        
+        // Parse strengths from about section (first 3 sentences or key points)
+        const aboutText = data?.optimized?.about || '';
+        const strengths = extractStrengths(aboutText);
+        
+        // Parse metrics from experience
+        const expText = data?.optimized?.experience || '';
+        const metrics = extractMetrics(expText);
+        
+        // Extract skills
+        const skills = extractSkills(headline, aboutText);
+        
+        const response = await fetch('/api/carousel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            headline,
+            strengths,
+            metrics,
+            skills,
+            linkedin: linkedin || 'linkedin.com/in/yourprofile',
+            cta: "I'm always open to discussing new opportunities and interesting projects."
+          })
+        });
+        
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Failed to generate carousel');
+        }
+        
+        const result = await response.json();
+        carouselSlides = result.slides;
+        
+        // Display slides
+        const container = document.getElementById('carouselSlides');
+        container.innerHTML = result.slides.map((src, i) => `
+          <div style="flex-shrink: 0;">
+            <img src="${src}" style="width: 200px; height: 200px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+            <div style="text-align: center; margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Slide ${i + 1}</div>
+          </div>
+        `).join('');
+        
+        document.getElementById('carouselLoading').style.display = 'none';
+        document.getElementById('carouselResults').style.display = 'block';
+        
+      } catch (err) {
+        alert('Error: ' + err.message);
+        document.getElementById('carouselLoading').style.display = 'none';
+        document.getElementById('carouselForm').style.display = 'block';
+      }
+    }
+    
+    function extractStrengths(text) {
+      // Simple extraction of key phrases
+      const defaults = ['Strategic Leadership', 'Results-Driven Execution', 'Cross-functional Collaboration'];
+      if (!text) return defaults;
+      
+      // Try to find key action words and their context
+      const patterns = [
+        /(?:expert in|skilled at|specialize in)\s+([^,.]+)/gi,
+        /(?:proven track record|experience in)\s+([^,.]+)/gi,
+        /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:leadership|management|strategy)/gi
+      ];
+      
+      const found = [];
+      patterns.forEach(p => {
+        const matches = text.match(p);
+        if (matches) found.push(...matches.slice(0, 2));
+      });
+      
+      return found.length >= 3 ? found.slice(0, 3) : defaults;
+    }
+    
+    function extractMetrics(text) {
+      const defaults = [
+        { value: '10+', label: 'Years Experience' },
+        { value: '50+', label: 'Projects Delivered' },
+        { value: '$1M+', label: 'Revenue Impact' },
+        { value: '25+', label: 'Team Members Led' }
+      ];
+      
+      if (!text) return defaults;
+      
+      const metrics = [];
+      
+      // Find percentage improvements
+      const percents = text.match(/(\d+)%/g);
+      if (percents && percents[0]) {
+        metrics.push({ value: percents[0], label: 'Improvement' });
+      }
+      
+      // Find dollar amounts
+      const dollars = text.match(/\$[\d.]+[MBK]?\+?/g);
+      if (dollars && dollars[0]) {
+        metrics.push({ value: dollars[0], label: 'Revenue Impact' });
+      }
+      
+      // Find team sizes
+      const teams = text.match(/(\d+)\+?\s*(?:team|people|employees|members)/i);
+      if (teams) {
+        metrics.push({ value: teams[1] + '+', label: 'Team Members' });
+      }
+      
+      // Find years
+      const years = text.match(/(\d+)\+?\s*years/i);
+      if (years) {
+        metrics.push({ value: years[1] + '+', label: 'Years Experience' });
+      }
+      
+      return metrics.length >= 4 ? metrics.slice(0, 4) : defaults;
+    }
+    
+    function extractSkills(headline, about) {
+      const defaults = ['Strategy', 'Operations', 'Leadership', 'Analytics', 'Product', 'Growth'];
+      
+      const text = (headline + ' ' + about).toLowerCase();
+      const skillKeywords = [
+        'strategy', 'operations', 'leadership', 'analytics', 'product', 'growth',
+        'marketing', 'sales', 'finance', 'engineering', 'design', 'data',
+        'agile', 'scrum', 'management', 'development', 'innovation'
+      ];
+      
+      const found = skillKeywords.filter(s => text.includes(s));
+      return found.length >= 6 ? found.slice(0, 6).map(s => s.charAt(0).toUpperCase() + s.slice(1)) : defaults;
+    }
+    
+    function downloadAllSlides() {
+      carouselSlides.forEach((dataUrl, i) => {
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = `career-carousel-slide-${i + 1}.png`;
+        link.click();
+      });
+    }
   </script>
 </body>
 </html>
