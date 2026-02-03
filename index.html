@@ -338,9 +338,22 @@
       border-radius: 8px;
       padding: 1rem;
       margin-top: 1rem;
-      white-space: pre-wrap;
       font-size: 0.95rem;
-      line-height: 1.6;
+      line-height: 1.7;
+    }
+    .output-box strong {
+      display: block;
+      color: #1a365d;
+      font-size: 1.05rem;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .output-box strong:first-child {
+      margin-top: 0;
+    }
+    .output-box .bullet {
+      color: #0077b5;
+      font-weight: bold;
     }
     
     .reset-btn {
@@ -566,7 +579,11 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
     }
     
     function copyText(elementId) {
-      const text = document.getElementById(elementId).innerText;
+      const el = document.getElementById(elementId);
+      // Get text content, cleaning up any HTML artifacts
+      let text = el.innerText || el.textContent;
+      // Clean up extra whitespace from HTML formatting
+      text = text.replace(/\n{3,}/g, '\n\n').trim();
       navigator.clipboard.writeText(text);
       event.target.textContent = '✅ Copied!';
       setTimeout(() => {
@@ -590,6 +607,19 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
       if (score < 50) circle.classList.add('score-low');
       else if (score < 75) circle.classList.add('score-medium');
       else circle.classList.add('score-high');
+    }
+    
+    // Format experience text with proper HTML
+    function formatExperience(text) {
+      if (!text) return '';
+      return text
+        // Convert **text** to <strong>text</strong>
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        // Convert bullet points to styled list
+        .replace(/^[•\-]\s*/gm, '<span class="bullet">•</span> ')
+        // Convert newlines to <br> but add spacing before job titles
+        .replace(/\n(?=<strong>)/g, '<br><br>')
+        .replace(/\n/g, '<br>');
     }
     
     function renderAudit(items) {
@@ -674,7 +704,7 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
         document.getElementById('aboutBefore').textContent = data.original.about || '(Not provided)';
         document.getElementById('aboutAfter').textContent = data.optimized.about;
         
-        document.getElementById('experienceAfter').textContent = data.optimized.experience;
+        document.getElementById('experienceAfter').innerHTML = formatExperience(data.optimized.experience);
         document.getElementById('resumeSummary').textContent = data.optimized.resumeSummary;
         
         document.getElementById('results').classList.add('visible');
