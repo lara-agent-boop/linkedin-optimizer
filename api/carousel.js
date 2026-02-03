@@ -33,6 +33,40 @@ async function generateSlide(element, fonts) {
 
 // Slide templates
 function coverSlide(data) {
+  // Headshot element - either image or placeholder
+  const headshotElement = data.headshot
+    ? {
+        type: "img",
+        props: {
+          src: data.headshot,
+          style: {
+            width: "220px",
+            height: "220px",
+            borderRadius: "110px",
+            objectFit: "cover",
+            border: "6px solid white",
+            marginBottom: "40px",
+          },
+        },
+      }
+    : {
+        type: "div",
+        props: {
+          style: {
+            width: "200px",
+            height: "200px",
+            borderRadius: "100px",
+            background: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "80px",
+            marginBottom: "40px",
+          },
+          children: "👤",
+        },
+      };
+
   return {
     type: "div",
     props: {
@@ -47,23 +81,7 @@ function coverSlide(data) {
         padding: "60px",
       },
       children: [
-        {
-          type: "div",
-          props: {
-            style: {
-              width: "200px",
-              height: "200px",
-              borderRadius: "100px",
-              background: "white",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "80px",
-              marginBottom: "40px",
-            },
-            children: "👤",
-          },
-        },
+        headshotElement,
         {
           type: "div",
           props: {
@@ -408,10 +426,10 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { name, headline, strengths, metrics, skills, cta, linkedin } =
+    const { name, headline, strengths, metrics, skills, cta, linkedin, headshot } =
       req.body;
 
-    const data = { name, headline, strengths, metrics, skills, cta, linkedin };
+    const data = { name, headline, strengths, metrics, skills, cta, linkedin, headshot };
 
     // Load fonts
     const [fontBold, fontRegular] = await Promise.all([

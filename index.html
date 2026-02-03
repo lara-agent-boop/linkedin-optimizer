@@ -540,6 +540,18 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
             </div>
           </div>
           
+          <div style="margin-bottom: 1rem;">
+            <label style="font-size: 0.9rem; color: #666; display: block; margin-bottom: 0.25rem;">Headshot Photo <span style="color: #999;">(optional)</span></label>
+            <div id="headshotUpload" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 2px dashed #ddd; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('headshotInput').click()">
+              <div id="headshotPreview" style="width: 60px; height: 60px; border-radius: 30px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden;">👤</div>
+              <div>
+                <div style="font-weight: 500; color: #333;">Click to upload headshot</div>
+                <div style="font-size: 0.85rem; color: #999;">Square photo works best</div>
+              </div>
+            </div>
+            <input type="file" id="headshotInput" accept="image/*" style="display: none;" onchange="handleHeadshot(event)">
+          </div>
+          
           <button type="button" onclick="generateCarousel()" id="carouselBtn" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
             🎨 Generate Career Carousel
           </button>
@@ -765,6 +777,22 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
     
     // Carousel generation
     let carouselSlides = [];
+    let headshotBase64 = null;
+    
+    function handleHeadshot(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        headshotBase64 = e.target.result;
+        const preview = document.getElementById('headshotPreview');
+        preview.innerHTML = `<img src="${headshotBase64}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        document.getElementById('headshotUpload').style.borderColor = '#0077b5';
+        document.getElementById('headshotUpload').style.background = '#f0f7fb';
+      };
+      reader.readAsDataURL(file);
+    }
     
     async function generateCarousel() {
       const name = document.getElementById('carouselName').value.trim();
@@ -804,7 +832,8 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
             metrics,
             skills,
             linkedin: linkedin || 'linkedin.com/in/yourprofile',
-            cta: "I'm always open to discussing new opportunities and interesting projects."
+            cta: "I'm always open to discussing new opportunities and interesting projects.",
+            headshot: headshotBase64
           })
         });
         
