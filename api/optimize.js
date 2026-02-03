@@ -157,6 +157,16 @@ Respond with a JSON object (no markdown, just valid JSON) with this exact struct
     "about": "<new about section, ~600-800 chars MAX, short punchy paragraphs, scannable>",
     "experience": "<rewritten experience bullets for most recent 2-3 roles, achievement-focused with metrics>",
     "resumeSummary": "<3-4 line resume summary that matches the new LinkedIn narrative>"
+  },
+  "carouselData": {
+    "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
+    "metrics": [
+      {"value": "<number with unit, e.g. 10+>", "label": "<what it measures, e.g. Years Experience>"},
+      {"value": "<e.g. $2M+>", "label": "<e.g. Revenue Generated>"},
+      {"value": "<e.g. 50+>", "label": "<e.g. Team Members Led>"},
+      {"value": "<e.g. 300%>", "label": "<e.g. Growth Achieved>"}
+    ],
+    "skills": ["<skill 1>", "<skill 2>", "<skill 3>", "<skill 4>", "<skill 5>", "<skill 6>"]
   }
 }
 
@@ -182,6 +192,11 @@ EXPERIENCE BULLETS:
 - First 2-3 bullets of each role are most important (visible before "see more")
 - Use action verbs: Led, Built, Drove, Transformed, Scaled, Launched
 - Bridge language for career pivoters (connect old experience to new target role)
+
+CAROUSEL DATA (extract from profile for visual carousel):
+- strengths: 3 key value propositions (what they bring to an employer)
+- metrics: 4 impressive numbers from their career (MUST be real from their profile, not made up). Use actual numbers found in their experience. Format: value like "10+", "25%", "$2M", and label like "Years Experience", "Revenue Growth"
+- skills: 6 key skills/expertise areas mentioned in their profile
 
 Return ONLY valid JSON, no explanation or markdown.`;
 

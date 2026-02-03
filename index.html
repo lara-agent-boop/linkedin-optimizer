@@ -529,6 +529,7 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
         <p style="color: #666; margin-bottom: 1rem;">Generate a shareable carousel for cold outreach, interviews, or networking</p>
         
         <div id="carouselForm" style="margin-bottom: 1.5rem;">
+          <!-- Header with photo -->
           <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8fafc; border-radius: 8px; margin-bottom: 1rem;">
             <div id="headshotUpload" style="width: 80px; height: 80px; border-radius: 40px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; overflow: hidden; flex-shrink: 0; border: 3px dashed #cbd5e0; transition: all 0.2s;" onclick="document.getElementById('headshotInput').click()">
               <div id="headshotPreview">👤</div>
@@ -540,6 +541,30 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
             </div>
             <input type="file" id="headshotInput" accept="image/*" style="display: none;" onchange="handleHeadshot(event)">
           </div>
+          
+          <!-- Editable Metrics -->
+          <details open style="margin-bottom: 1rem;">
+            <summary style="cursor: pointer; font-weight: 600; color: #1a202c; margin-bottom: 0.75rem;">📊 Key Metrics (edit as needed)</summary>
+            <div id="metricsEditor" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+              <!-- Filled dynamically -->
+            </div>
+          </details>
+          
+          <!-- Editable Strengths -->
+          <details style="margin-bottom: 1rem;">
+            <summary style="cursor: pointer; font-weight: 600; color: #1a202c; margin-bottom: 0.75rem;">💪 Key Strengths</summary>
+            <div id="strengthsEditor" style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <!-- Filled dynamically -->
+            </div>
+          </details>
+          
+          <!-- Editable Skills -->
+          <details style="margin-bottom: 1rem;">
+            <summary style="cursor: pointer; font-weight: 600; color: #1a202c; margin-bottom: 0.75rem;">🎯 Skills</summary>
+            <div id="skillsEditor" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+              <!-- Filled dynamically -->
+            </div>
+          </details>
           
           <button type="button" onclick="generateCarousel()" id="carouselBtn" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
             🎨 Generate Career Carousel
@@ -756,6 +781,9 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
         document.getElementById('carouselNameDisplay').textContent = window.extractedName;
         document.getElementById('carouselHeadlineDisplay').textContent = data.optimized?.headline || '';
         
+        // Populate editable carousel data
+        populateCarouselEditors(data.carouselData);
+        
         document.getElementById('results').classList.add('visible');
         document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
         
@@ -780,6 +808,63 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
     let carouselSlides = [];
     let headshotBase64 = null;
     
+    function populateCarouselEditors(carouselData) {
+      // Metrics
+      const metricsContainer = document.getElementById('metricsEditor');
+      const metrics = carouselData?.metrics || [
+        {value: '10+', label: 'Years Experience'},
+        {value: '$1M+', label: 'Revenue Impact'},
+        {value: '50+', label: 'Projects Led'},
+        {value: '25%', label: 'Growth Achieved'}
+      ];
+      metricsContainer.innerHTML = metrics.map((m, i) => `
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="metricValue${i}" value="${m.value}" placeholder="10+" style="width: 80px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-weight: bold; text-align: center;">
+          <input type="text" id="metricLabel${i}" value="${m.label}" placeholder="Years Experience" style="flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+      `).join('');
+      
+      // Strengths
+      const strengthsContainer = document.getElementById('strengthsEditor');
+      const strengths = carouselData?.strengths || ['Strategic Leadership', 'Results-Driven Execution', 'Cross-functional Collaboration'];
+      strengthsContainer.innerHTML = strengths.map((s, i) => `
+        <input type="text" id="strength${i}" value="${s}" placeholder="Key strength ${i+1}" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+      `).join('');
+      
+      // Skills
+      const skillsContainer = document.getElementById('skillsEditor');
+      const skills = carouselData?.skills || ['Strategy', 'Operations', 'Leadership', 'Analytics', 'Product', 'Growth'];
+      skillsContainer.innerHTML = skills.map((s, i) => `
+        <input type="text" id="skill${i}" value="${s}" placeholder="Skill" style="width: 120px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+      `).join('');
+    }
+    
+    function getCarouselDataFromEditors() {
+      // Read metrics
+      const metrics = [];
+      for (let i = 0; i < 4; i++) {
+        const value = document.getElementById(`metricValue${i}`)?.value;
+        const label = document.getElementById(`metricLabel${i}`)?.value;
+        if (value && label) metrics.push({value, label});
+      }
+      
+      // Read strengths
+      const strengths = [];
+      for (let i = 0; i < 3; i++) {
+        const s = document.getElementById(`strength${i}`)?.value;
+        if (s) strengths.push(s);
+      }
+      
+      // Read skills
+      const skills = [];
+      for (let i = 0; i < 6; i++) {
+        const s = document.getElementById(`skill${i}`)?.value;
+        if (s) skills.push(s);
+      }
+      
+      return { metrics, strengths, skills };
+    }
+    
     function handleHeadshot(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -799,35 +884,25 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
     async function generateCarousel() {
       const name = window.extractedName || 'Your Name';
       const linkedin = window.extractedLinkedin || 'linkedin.com/in/yourprofile';
+      const data = window.optimizedData;
+      const headline = data?.optimized?.headline || 'Professional';
+      
+      // Get edited data from form
+      const editedData = getCarouselDataFromEditors();
       
       document.getElementById('carouselForm').style.display = 'none';
       document.getElementById('carouselLoading').style.display = 'block';
       
       try {
-        // Extract data from optimized profile
-        const data = window.optimizedData;
-        const headline = data?.optimized?.headline || 'Professional';
-        
-        // Parse strengths from about section (first 3 sentences or key points)
-        const aboutText = data?.optimized?.about || '';
-        const strengths = extractStrengths(aboutText);
-        
-        // Parse metrics from experience
-        const expText = data?.optimized?.experience || '';
-        const metrics = extractMetrics(expText);
-        
-        // Extract skills
-        const skills = extractSkills(headline, aboutText);
-        
         const response = await fetch('/api/carousel', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name,
             headline,
-            strengths,
-            metrics,
-            skills,
+            strengths: editedData.strengths,
+            metrics: editedData.metrics,
+            skills: editedData.skills,
             linkedin: linkedin || 'linkedin.com/in/yourprofile',
             cta: "I'm always open to discussing new opportunities and interesting projects.",
             headshot: headshotBase64
@@ -859,80 +934,6 @@ Senior Marketing Coordinator at Beta Inc (2017-2020)
         document.getElementById('carouselLoading').style.display = 'none';
         document.getElementById('carouselForm').style.display = 'block';
       }
-    }
-    
-    function extractStrengths(text) {
-      // Simple extraction of key phrases
-      const defaults = ['Strategic Leadership', 'Results-Driven Execution', 'Cross-functional Collaboration'];
-      if (!text) return defaults;
-      
-      // Try to find key action words and their context
-      const patterns = [
-        /(?:expert in|skilled at|specialize in)\s+([^,.]+)/gi,
-        /(?:proven track record|experience in)\s+([^,.]+)/gi,
-        /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:leadership|management|strategy)/gi
-      ];
-      
-      const found = [];
-      patterns.forEach(p => {
-        const matches = text.match(p);
-        if (matches) found.push(...matches.slice(0, 2));
-      });
-      
-      return found.length >= 3 ? found.slice(0, 3) : defaults;
-    }
-    
-    function extractMetrics(text) {
-      const defaults = [
-        { value: '10+', label: 'Years Experience' },
-        { value: '50+', label: 'Projects Delivered' },
-        { value: '$1M+', label: 'Revenue Impact' },
-        { value: '25+', label: 'Team Members Led' }
-      ];
-      
-      if (!text) return defaults;
-      
-      const metrics = [];
-      
-      // Find percentage improvements
-      const percents = text.match(/(\d+)%/g);
-      if (percents && percents[0]) {
-        metrics.push({ value: percents[0], label: 'Improvement' });
-      }
-      
-      // Find dollar amounts
-      const dollars = text.match(/\$[\d.]+[MBK]?\+?/g);
-      if (dollars && dollars[0]) {
-        metrics.push({ value: dollars[0], label: 'Revenue Impact' });
-      }
-      
-      // Find team sizes
-      const teams = text.match(/(\d+)\+?\s*(?:team|people|employees|members)/i);
-      if (teams) {
-        metrics.push({ value: teams[1] + '+', label: 'Team Members' });
-      }
-      
-      // Find years
-      const years = text.match(/(\d+)\+?\s*years/i);
-      if (years) {
-        metrics.push({ value: years[1] + '+', label: 'Years Experience' });
-      }
-      
-      return metrics.length >= 4 ? metrics.slice(0, 4) : defaults;
-    }
-    
-    function extractSkills(headline, about) {
-      const defaults = ['Strategy', 'Operations', 'Leadership', 'Analytics', 'Product', 'Growth'];
-      
-      const text = (headline + ' ' + about).toLowerCase();
-      const skillKeywords = [
-        'strategy', 'operations', 'leadership', 'analytics', 'product', 'growth',
-        'marketing', 'sales', 'finance', 'engineering', 'design', 'data',
-        'agile', 'scrum', 'management', 'development', 'innovation'
-      ];
-      
-      const found = skillKeywords.filter(s => text.includes(s));
-      return found.length >= 6 ? found.slice(0, 6).map(s => s.charAt(0).toUpperCase() + s.slice(1)) : defaults;
     }
     
     function downloadAllSlides() {
